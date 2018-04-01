@@ -1,0 +1,6 @@
+/.idea
+/themes
+/syntaxes
+/target/
+**/*.rs.bk
+kcat.iml
