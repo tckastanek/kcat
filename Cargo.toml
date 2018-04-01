@@ -2,6 +2,9 @@
 name = "kcat"
 version = "0.1.0"
 authors = ["Thomas Kastanek"]
+license = "MIT"
+repository = "https://github.com/tckastanek/kcat"
+description = """Kind of like cat, but with syntax highlighting and keypathing into JSON files."""
 
 [dependencies]
 clap = "^2.3"
