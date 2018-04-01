@@ -37,8 +37,11 @@ fn main() {
         .arg(Arg::with_name(FILE_ARG)
             .help("file path")
             .required(true)
+            .multiple(true)
             .value_name("FILE"))
         .arg(Arg::with_name(KEY_PATH_ARG)
+            .short("k")
+            .long(KEY_PATH_ARG)
             .help("key path")
             .value_name(KEY_PATH_ARG))
         .arg(Arg::with_name(NO_DEFAULT_SYNTAXES_ARG)
@@ -92,29 +95,31 @@ fn main() {
         .map(|t| Cow::Borrowed(t))
         .unwrap_or_else(|| Cow::Owned(load_theme(theme_file, cache_theme)));
     
-    let file_path = Path::new(matches.value_of(FILE_ARG).unwrap());
-    match file_path.extension() {
-        None => print_fallback(&file_path),
-        Some(os_string) => {
-            match (os_string.to_str(), matches.value_of(KEY_PATH_ARG)) {
-                (Some(ext), Some(key_path)) if ext == "json" => {
-                    print_json(
+    for arg in matches.values_of(FILE_ARG).unwrap() {
+        let file_path = Path::new(arg);
+        match file_path.extension() {
+            None => print_fallback(&file_path),
+            Some(os_string) => {
+                match (os_string.to_str(), matches.value_of(KEY_PATH_ARG)) {
+                    (Some(ext), Some(key_path)) if ext == "json" => {
+                        print_json(
+                            &syntax_set,
+                            &theme,
+                            &file_path,
+                            &ext,
+                            &key_path);
+                    }
+                    (Some(ext), _) => print_lines_with_extension(
                         &syntax_set,
                         &theme,
                         &file_path,
-                        &ext,
-                        &key_path);
+                        &ext),
+                    (_, _) => println!("Something went awry!")
                 }
-                (Some(ext), _) => print_lines_with_extension(
-                    &syntax_set,
-                    &theme,
-                    &file_path,
-                    &ext),
-                (_, _) => println!("Something went awry!")
             }
-        }
+        };
     };
-    
+//    let file_path = Path::new(matches.value_of(FILE_ARG).unwrap());
     // Clear the formatting
     println!("\x1b[0m");
 }
