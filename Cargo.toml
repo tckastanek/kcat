@@ -8,10 +8,12 @@ homepage = "https://github.com/tckastanek/kcat"
 description = """
 Kind of like cat, but with syntax highlighting and keypathing into JSON files.
 """
-keywords = ["syntax", "highlighting", "highlighter", "colouring"]
+keywords = ["syntax", "highlighting", "highlighter", "coloring"]
 readme = "README.md"
 
 [dependencies]
 clap = "^2.3"
+failure = "^0.1.1"
+failure_derive = "^0.1.1"
 serde_json = "^1.0"
 syntect = "^2.0"

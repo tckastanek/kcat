@@ -1,8 +1,12 @@
 extern crate clap;
 extern crate serde_json;
 extern crate syntect;
+extern crate failure;
+
+#[macro_use] extern crate failure_derive;
 
 mod constants;
+mod errors;
 mod printers;
 mod theme_helpers;
 
@@ -90,36 +94,38 @@ fn main() {
     );
     let theme_file = theme_file.unwrap_or(DEFAULT_THEME);
     
-    let theme = theme_set.themes.get(theme_file)
-        .map(|t| Cow::Borrowed(t))
-        .unwrap_or_else(|| Cow::Owned(load_theme(theme_file, cache_theme)));
+    if let Some(theme) = load_theme(theme_file, cache_theme) {
+      let loaded_theme = theme_set.themes.get(theme_file)
+          .map(|t| Cow::Borrowed(t))
+          .unwrap_or_else(|| Cow::Owned(theme));
     
-    if matches.is_present(FILE_ARG) {
-        for arg in matches.values_of(FILE_ARG).unwrap() {
-            let file_path = Path::new(arg);
-            match file_path.extension() {
-                None => print_fallback(&file_path),
-                Some(os_string) => {
-                    match (os_string.to_str(), matches.value_of(KEY_PATH_ARG)) {
-                        (Some(ext), Some(key_path)) if ext == "json" => {
-                            print_json(
+        if matches.is_present(FILE_ARG) {
+            for arg in matches.values_of(FILE_ARG).unwrap() {
+                let file_path = Path::new(arg);
+                match file_path.extension() {
+                    None => print_fallback(&file_path),
+                    Some(os_string) => {
+                        match (os_string.to_str(), matches.value_of(KEY_PATH_ARG)) {
+                            (Some(ext), Some(key_path)) if ext == "json" => {
+                                print_json(
+                                    &syntax_set,
+                                    &loaded_theme,
+                                    &file_path,
+                                    &ext,
+                                    &key_path);
+                            }
+                            (Some(ext), _) => print_lines_with_extension(
                                 &syntax_set,
-                                &theme,
+                                &loaded_theme,
                                 &file_path,
-                                &ext,
-                                &key_path);
+                                &ext),
+                            (_, _) => println!("Something went awry!")
                         }
-                        (Some(ext), _) => print_lines_with_extension(
-                            &syntax_set,
-                            &theme,
-                            &file_path,
-                            &ext),
-                        (_, _) => println!("Something went awry!")
                     }
-                }
+                };
             };
-        };
-    }
+        }
+    };
     
     // Clear the formatting
     println!("\x1b[0m");

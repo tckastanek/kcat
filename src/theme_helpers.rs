@@ -1,3 +1,4 @@
+use errors::KcatError;
 use std::path::Path;
 use syntect::{
     dumps::{ from_dump_file, dump_to_file },
@@ -44,7 +45,7 @@ pub fn get_syntax_set(no_default_syntaxes: bool, extra_syntaxes: Option<&str>) -
     ss
 }
 
-pub fn load_theme(tm_file: &str, enable_caching: bool) -> Theme {
+pub fn load_theme(tm_file: &str, enable_caching: bool) -> Option<Theme> {
     let tm_path = Path::new(tm_file);
     
     if enable_caching {
@@ -53,11 +54,24 @@ pub fn load_theme(tm_file: &str, enable_caching: bool) -> Theme {
         if tm_cache.exists() {
             from_dump_file(tm_cache).unwrap()
         } else {
-            let theme = ThemeSet::get_theme(tm_path).unwrap();
-            dump_to_file(&theme, tm_cache).unwrap();
-            theme
+            match ThemeSet::get_theme(tm_path) {
+                Err(_) => {
+                    println!("{}", KcatError::InvalidPath);
+                    None
+                },
+                Ok(theme) => {
+                    dump_to_file(&theme, tm_cache).unwrap();
+                    Some(theme)
+                }
+            }
         }
     } else {
-        ThemeSet::get_theme(tm_path).unwrap()
+        match ThemeSet::get_theme(tm_path) {
+            Err(_) => {
+                println!("{}", KcatError::InvalidPath);
+                None
+            },
+            Ok(theme) => Some(theme)
+        }
     }
 }
