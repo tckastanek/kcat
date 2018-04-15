@@ -2,17 +2,9 @@ extern crate serde_json;
 
 use errors::KcatError;
 use serde_json::Value;
-use std::{
-    fs::File,
-    io::Read,
-    path::Path
-};
-use syntect::{
-    easy::HighlightLines,
-    highlighting::{ Style, Theme },
-    parsing::SyntaxSet,
-    util::as_24_bit_terminal_escaped
-};
+use std::{fs::File, io::Read, path::Path};
+use syntect::{easy::HighlightLines, highlighting::{Style, Theme}, parsing::SyntaxSet,
+              util::as_24_bit_terminal_escaped};
 
 pub fn print_fallback(path: &Path) -> () {
     let mut s = String::new();
@@ -24,7 +16,7 @@ pub fn print_fallback(path: &Path) -> () {
             }
         }
     };
-    
+
     println!("{}", s);
 }
 
@@ -32,27 +24,24 @@ pub fn print_lines_with_extension(
     syntax_set: &SyntaxSet,
     theme: &Theme,
     path: &Path,
-    extension: &str) -> () {
+    extension: &str,
+) -> () {
     match syntax_set.find_syntax_by_extension(extension) {
         None => print_fallback(path),
         Some(syntax) => {
             let mut h = HighlightLines::new(syntax, theme);
-            
+
             let mut s = String::new();
             match File::open(path) {
                 Err(_) => println!("ERROR: {}", KcatError::InvalidPath),
-                Ok(mut file) => {
-                    match file.read_to_string(&mut s) {
-                        Err(_) => println!("ERROR: {}", KcatError::InvalidFile),
-                        Ok(_) => {
-                            for line in s.lines() {
-                                let ranges: Vec<(Style, &str)> = h.highlight(line);
-                                let escaped = as_24_bit_terminal_escaped(&ranges[..], true);
-                                println!("{}", escaped);
-                            }
-                        }
-                    }
-                }
+                Ok(mut file) => match file.read_to_string(&mut s) {
+                    Err(_) => println!("ERROR: {}", KcatError::InvalidFile),
+                    Ok(_) => for line in s.lines() {
+                        let ranges: Vec<(Style, &str)> = h.highlight(line);
+                        let escaped = as_24_bit_terminal_escaped(&ranges[..], true);
+                        println!("{}", escaped);
+                    },
+                },
             }
         }
     }
@@ -63,34 +52,32 @@ pub fn print_json(
     theme: &Theme,
     path: &Path,
     extension: &str,
-    key_path: &str) -> () {
+    key_path: &str,
+) -> () {
     // should be safe as we only call this with extension as JSON
     let syntax = syntax_set.find_syntax_by_extension(extension).unwrap();
     let mut h = HighlightLines::new(syntax, &theme);
-//    let mut f = File::open(path).expect("cannot read file");
+    //    let mut f = File::open(path).expect("cannot read file");
     let mut s = String::new();
-    
+
     let keys = parse_key_path(key_path);
     match File::open(path) {
         Err(_) => println!("ERROR: {}", KcatError::InvalidPath),
-        Ok(mut file) => {
-            match file.read_to_string(&mut s) {
-                Err(_) => println!("ERROR: {}", KcatError::InvalidFile),
-                Ok(_) => {
-                    let v: Value = serde_json::from_str(&s).unwrap();
-                    let final_value = get_value(&v, keys);
-                    if let Some(string) = serde_json::to_string_pretty(final_value).ok() {
-                        for line in string.as_str().lines() {
-                            let ranges: Vec<(Style, &str)> = h.highlight(line);
-                            let escaped = as_24_bit_terminal_escaped(&ranges[..], true);
-                            println!("{}", escaped);
-                        }
+        Ok(mut file) => match file.read_to_string(&mut s) {
+            Err(_) => println!("ERROR: {}", KcatError::InvalidFile),
+            Ok(_) => {
+                let v: Value = serde_json::from_str(&s).unwrap();
+                let final_value = get_value(&v, keys);
+                if let Some(string) = serde_json::to_string_pretty(final_value).ok() {
+                    for line in string.as_str().lines() {
+                        let ranges: Vec<(Style, &str)> = h.highlight(line);
+                        let escaped = as_24_bit_terminal_escaped(&ranges[..], true);
+                        println!("{}", escaped);
                     }
                 }
             }
-        }
+        },
     }
-
 }
 
 // TODO: allow for optional delimiter argument
