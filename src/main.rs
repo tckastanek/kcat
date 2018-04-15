@@ -1,3 +1,4 @@
+#[macro_use]
 extern crate clap;
 extern crate failure;
 #[macro_use]
@@ -19,7 +20,7 @@ mod theme_helpers;
 
 fn main() {
     let matches = App::new("Key Cat")
-        .version("0.1")
+        .version(crate_version!())
         .author("Thomas Kastanek")
         .about("Like `cat`, but with key paths")
         .arg(Arg::with_name(FILE_ARG)
@@ -73,14 +74,16 @@ fn main() {
     let cache_theme = matches.is_present(CACHE_THEME_ARG);
     let theme_set = get_theme_set(list_file_types, list_embedded_themes, &syntax_set);
     let theme_file = theme_file.unwrap_or(DEFAULT_THEME);
-
-    if let Some(theme) = load_theme(theme_file, cache_theme) {
-        let loaded_theme = theme_set
-            .themes
-            .get(theme_file)
-            .map(|t| Cow::Borrowed(t))
-            .unwrap_or_else(|| Cow::Owned(theme));
-
+    
+    let loaded_theme = match theme_set.themes.get(theme_file).map(|t| Cow::Borrowed(t)) {
+        None => match load_theme(theme_file, cache_theme) {
+            None => None,
+            Some(theme) => Some(Cow::Owned(theme))
+        },
+        Some(theme) => Some(theme)
+    };
+    
+    if let Some(theme) = loaded_theme {
         if matches.is_present(FILE_ARG) {
             for arg in matches.values_of(FILE_ARG).unwrap() {
                 let file_path = Path::new(arg);
@@ -88,18 +91,18 @@ fn main() {
                     None => print_fallback(&file_path),
                     Some(os_string) => match (os_string.to_str(), matches.value_of(KEY_PATH_ARG)) {
                         (Some(ext), Some(key_path)) if ext == "json" => {
-                            print_json(&syntax_set, &loaded_theme, &file_path, &ext, &key_path);
+                            print_json(&syntax_set, &theme, &file_path, &ext, &key_path);
                         }
                         (Some(ext), _) => {
-                            print_lines_with_extension(&syntax_set, &loaded_theme, &file_path, &ext)
+                            print_lines_with_extension(&syntax_set, &theme, &file_path, &ext)
                         }
                         (_, _) => println!("Something went awry!"),
                     },
                 };
             }
         }
-    };
-
+    }
+    
     // Clear the formatting
     println!("\x1b[0m");
 }

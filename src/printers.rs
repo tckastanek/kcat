@@ -57,7 +57,6 @@ pub fn print_json(
     // should be safe as we only call this with extension as JSON
     let syntax = syntax_set.find_syntax_by_extension(extension).unwrap();
     let mut h = HighlightLines::new(syntax, &theme);
-    //    let mut f = File::open(path).expect("cannot read file");
     let mut s = String::new();
 
     let keys = parse_key_path(key_path);
