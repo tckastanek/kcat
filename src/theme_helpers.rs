@@ -47,9 +47,16 @@ pub fn load_theme(tm_file: &str, enable_caching: bool) -> Option<Theme> {
 
     if enable_caching {
         let tm_cache = tm_path.with_extension("tmdump");
-
+        
         if tm_cache.exists() {
-            from_dump_file(tm_cache).unwrap()
+            // NOTE: This tends to not unwrap for some reason
+            from_dump_file(tm_cache).unwrap_or(match ThemeSet::get_theme(tm_path) {
+                Err(_) => {
+                    println!("{}", KcatError::InvalidPath);
+                    None
+                }
+                Ok(theme) => Some(theme)
+            })
         } else {
             match ThemeSet::get_theme(tm_path) {
                 Err(_) => {
