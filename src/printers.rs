@@ -3,8 +3,12 @@ extern crate serde_json;
 use errors::KcatError;
 use serde_json::Value;
 use std::{fs::File, io::Read, path::Path};
-use syntect::{easy::HighlightLines, highlighting::{Style, Theme}, parsing::SyntaxSet,
-              util::as_24_bit_terminal_escaped};
+use syntect::{
+    easy::HighlightLines,
+    highlighting::{Style, Theme},
+    parsing::SyntaxSet,
+    util::as_24_bit_terminal_escaped,
+};
 
 pub fn print_fallback(path: &Path) -> () {
     let mut s = String::new();
@@ -36,11 +40,13 @@ pub fn print_lines_with_extension(
                 Err(_) => println!("ERROR: {}", KcatError::InvalidPath),
                 Ok(mut file) => match file.read_to_string(&mut s) {
                     Err(_) => println!("ERROR: {}", KcatError::InvalidFile),
-                    Ok(_) => for line in s.lines() {
-                        let ranges: Vec<(Style, &str)> = h.highlight(line);
-                        let escaped = as_24_bit_terminal_escaped(&ranges[..], true);
-                        println!("{}", escaped);
-                    },
+                    Ok(_) => {
+                        for line in s.lines() {
+                            let ranges: Vec<(Style, &str)> = h.highlight(line);
+                            let escaped = as_24_bit_terminal_escaped(&ranges[..], true);
+                            println!("{}", escaped);
+                        }
+                    }
                 },
             }
         }

@@ -7,8 +7,10 @@ extern crate serde_json;
 extern crate syntect;
 
 use clap::{App, Arg};
-use constants::{CACHE_THEME_ARG, DEFAULT_THEME, EXTRA_SYNTAXES_ARG, FILE_ARG, KEY_PATH_ARG,
-                LIST_THEMES_ARG, LIST_TYPES_ARG, NO_DEFAULT_SYNTAXES_ARG, THEME_FILE_ARG};
+use constants::{
+    CACHE_THEME_ARG, DEFAULT_THEME, EXTRA_SYNTAXES_ARG, FILE_ARG, KEY_PATH_ARG, LIST_THEMES_ARG,
+    LIST_TYPES_ARG, NO_DEFAULT_SYNTAXES_ARG, THEME_FILE_ARG,
+};
 use printers::{print_fallback, print_json, print_lines_with_extension};
 use std::{borrow::Cow, path::Path};
 use theme_helpers::{get_syntax_set, get_theme_set, load_theme};
@@ -74,15 +76,15 @@ fn main() {
     let cache_theme = matches.is_present(CACHE_THEME_ARG);
     let theme_set = get_theme_set(list_file_types, list_embedded_themes, &syntax_set);
     let theme_file = theme_file.unwrap_or(DEFAULT_THEME);
-    
+
     let loaded_theme = match theme_set.themes.get(theme_file).map(|t| Cow::Borrowed(t)) {
         None => match load_theme(theme_file, cache_theme) {
             None => None,
-            Some(theme) => Some(Cow::Owned(theme))
+            Some(theme) => Some(Cow::Owned(theme)),
         },
-        Some(theme) => Some(theme)
+        Some(theme) => Some(theme),
     };
-    
+
     if let Some(theme) = loaded_theme {
         if matches.is_present(FILE_ARG) {
             for arg in matches.values_of(FILE_ARG).unwrap() {
@@ -102,7 +104,7 @@ fn main() {
             }
         }
     }
-    
+
     // Clear the formatting
     println!("\x1b[0m");
 }

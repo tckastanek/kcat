@@ -1,7 +1,10 @@
 use errors::KcatError;
 use std::path::Path;
-use syntect::{dumps::{dump_to_file, from_dump_file}, highlighting::{Theme, ThemeSet},
-              parsing::SyntaxSet};
+use syntect::{
+    dumps::{dump_to_file, from_dump_file},
+    highlighting::{Theme, ThemeSet},
+    parsing::SyntaxSet,
+};
 
 pub fn get_theme_set(
     list_file_types: bool,
@@ -47,7 +50,7 @@ pub fn load_theme(tm_file: &str, enable_caching: bool) -> Option<Theme> {
 
     if enable_caching {
         let tm_cache = tm_path.with_extension("tmdump");
-        
+
         if tm_cache.exists() {
             // NOTE: This tends to not unwrap for some reason
             from_dump_file(tm_cache).unwrap_or(match ThemeSet::get_theme(tm_path) {
@@ -55,7 +58,7 @@ pub fn load_theme(tm_file: &str, enable_caching: bool) -> Option<Theme> {
                     println!("{}", KcatError::InvalidPath);
                     None
                 }
-                Ok(theme) => Some(theme)
+                Ok(theme) => Some(theme),
             })
         } else {
             match ThemeSet::get_theme(tm_path) {
