@@ -10,12 +10,12 @@ use syntect::{
     util::as_24_bit_terminal_escaped,
 };
 
-pub fn print_fallback(path: &Path) -> () {
+pub fn print_fallback(path: &Path) {
     let mut s = String::new();
     match File::open(path) {
         Err(_) => println!("ERROR: {}", KcatError::InvalidPath),
         Ok(mut file) => {
-            if let Err(_) = file.read_to_string(&mut s) {
+            if file.read_to_string(&mut s).is_err() {
                 println!("ERROR: {}", KcatError::InvalidFile);
             }
         }
@@ -29,7 +29,7 @@ pub fn print_lines_with_extension(
     theme: &Theme,
     path: &Path,
     extension: &str,
-) -> () {
+) {
     match syntax_set.find_syntax_by_extension(extension) {
         None => print_fallback(path),
         Some(syntax) => {
@@ -59,7 +59,7 @@ pub fn print_json(
     path: &Path,
     extension: &str,
     key_path: &str,
-) -> () {
+) {
     // should be safe as we only call this with extension as JSON
     let syntax = syntax_set.find_syntax_by_extension(extension).unwrap();
     let mut h = HighlightLines::new(syntax, &theme);
