@@ -42,7 +42,7 @@ pub fn print_lines_with_extension(
                     Err(_) => println!("ERROR: {}", KcatError::InvalidFile),
                     Ok(_) => {
                         for line in s.lines() {
-                            let ranges: Vec<(Style, &str)> = h.highlight(line);
+                            let ranges: Vec<(Style, &str)> = h.highlight(line, syntax_set);
                             let escaped = as_24_bit_terminal_escaped(&ranges[..], true);
                             println!("{}", escaped);
                         }
@@ -75,7 +75,7 @@ pub fn print_json(
                 let final_value = get_value(&v, keys);
                 if let Some(string) = serde_json::to_string_pretty(final_value).ok() {
                     for line in string.as_str().lines() {
-                        let ranges: Vec<(Style, &str)> = h.highlight(line);
+                        let ranges: Vec<(Style, &str)> = h.highlight(line, syntax_set);
                         let escaped = as_24_bit_terminal_escaped(&ranges[..], true);
                         println!("{}", escaped);
                     }

@@ -31,15 +31,14 @@ pub fn get_theme_set(
 }
 
 pub fn get_syntax_set(no_default_syntaxes: bool, extra_syntaxes: Option<&str>) -> SyntaxSet {
-    let mut ss: SyntaxSet = if no_default_syntaxes {
+    let ss: SyntaxSet = if no_default_syntaxes {
         SyntaxSet::new()
     } else {
         SyntaxSet::load_defaults_nonewlines()
     };
 
     if let Some(folder) = extra_syntaxes {
-        ss.load_syntaxes(folder, false).unwrap();
-        ss.link_syntaxes();
+        SyntaxSet::load_from_folder(folder).unwrap();
     }
 
     ss
