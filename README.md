@@ -1,4 +1,4 @@
-kcat
+kcat [![Build Status](https://travis-ci.org/tckastanek/kcat.svg?branch=master)](https://travis-ci.org/tckastanek/kcat)
 ===
 
 Key Cat
